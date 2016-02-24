@@ -4,6 +4,8 @@
 #include <tuple>
 #include <functional>
 #include <vector>
+#include <chrono>
+#include <ctime>
 
 
 using namespace std;
@@ -78,6 +80,43 @@ bool SparseLevenshteinAutomaton::is_match(tuple<vector<int>, vector<int>>& previ
 }
 
 
+void benchmark(size_t mistakes, 
+				const vector<string> &first_file_seq, 
+				 const vector<string> &second_file_seq, 
+				 size_t first_file_size, 
+				 size_t second_file_size, ofstream &outfile)
+{
+	std::chrono::system_clock::time_point tp1;
+
+	tp1 = std::chrono::system_clock::now();
+	time_t tp2;
+
+	for (int k = 0; k < first_file_size; k++)  {
+		string auto_word = first_file_seq[k];
+		SparseLevenshteinAutomaton sparse;
+		sparse.set_values (auto_word, mistakes);
+		tuple<vector<int>, vector<int>> s_sparse1 = sparse.start();
+		for (int j = 0; j < second_file_size; j++)  {
+			string word_check = second_file_seq[j];
+			tuple<vector<int>, vector<int>> s_sparse = s_sparse1;
+			 for (int i = 0; i < word_check.length(); i++) {
+				 s_sparse = sparse.step(s_sparse, word_check[i]);
+				 if (i == word_check.length() - 1) {
+					 if (sparse.is_match(s_sparse)) {
+						 // outfile << word_check << " " << auto_word << "\n";
+					 	outfile << (int) i << " " << (int) j << "\n";
+					 }
+				 }
+			 }
+		}
+	  }
+
+	tp2 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - std::chrono::system_clock::to_time_t(tp1);
+
+	cout << "benchmark (" << (size_t) first_file_size << " : " << second_file_size << ") - " << tp2 << "sec" << endl;
+}
+
+
 int main (int argc, char** argv) {
   string line1, line2;
   char* file1 = argv[1];
@@ -106,24 +145,11 @@ int main (int argc, char** argv) {
         }
         myfile1.close();
       }
-  for (int k = 0; k < first_file_seq.size(); k++)  {
-	string auto_word = first_file_seq[k];
-	SparseLevenshteinAutomaton sparse;
-	sparse.set_values (auto_word, mistakes);
-	tuple<vector<int>, vector<int>> s_sparse1 = sparse.start();
-	for (int j = 0; j < second_file_seq.size(); j++)  {
-		string word_check = second_file_seq[j];
-		tuple<vector<int>, vector<int>> s_sparse = s_sparse1;
-		 for (int i = 0; i < word_check.length(); i++) {
-			 s_sparse = sparse.step(s_sparse, word_check[i]);
-			 if (i == word_check.length() - 1) {
-				 if (sparse.is_match(s_sparse)) {
-					 outfile << word_check << " " << auto_word << "\n";
-				 }
-			 }
-		 }
-	}
-  }
+  benchmark(mistakes, first_file_seq, second_file_seq, 100, 100, outfile);
+  benchmark(mistakes, first_file_seq, second_file_seq, 500, 500, outfile);
+  benchmark(mistakes, first_file_seq, second_file_seq, 1000, 1000, outfile);
+  benchmark(mistakes, first_file_seq, second_file_seq, 3000, 3000, outfile);
+  benchmark(mistakes, first_file_seq, second_file_seq, 5000, 5000, outfile);
   outfile.close();
   return 0;
 }
