@@ -9,6 +9,7 @@
 
 
 using namespace std;
+using namespace std::chrono;
 
 class SparseLevenshteinAutomaton {
   private:
@@ -86,10 +87,7 @@ void benchmark(size_t mistakes,
 				 size_t first_file_size, 
 				 size_t second_file_size, ofstream &outfile)
 {
-	std::chrono::system_clock::time_point tp1;
-
-	tp1 = std::chrono::system_clock::now();
-	time_t tp2;
+	std::chrono::milliseconds tp1 = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch());
 
 	for (int k = 0; k < first_file_size; k++)  {
 		string auto_word = first_file_seq[k];
@@ -108,9 +106,11 @@ void benchmark(size_t mistakes,
 		}
 	  }
 
-	tp2 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - std::chrono::system_clock::to_time_t(tp1);
 
-	cout << "benchmark (" << (size_t) first_file_size << " : " << second_file_size << ") - " << tp2 << "sec" << endl;
+	std::chrono::milliseconds tp2 = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch());
+	auto diff = tp2.count() - tp1.count();
+
+	cout << "benchmark (" << (size_t) first_file_size << " : " << second_file_size << ") - " << diff << " milsec" << endl;
 }
 
 
@@ -144,9 +144,9 @@ int main (int argc, char** argv) {
       }
   benchmark(mistakes, first_file_seq, second_file_seq, 100, 100, outfile);
   benchmark(mistakes, first_file_seq, second_file_seq, 500, 500, outfile);
-  benchmark(mistakes, first_file_seq, second_file_seq, 1000, 1000, outfile);
-  benchmark(mistakes, first_file_seq, second_file_seq, 3000, 3000, outfile);
-  benchmark(mistakes, first_file_seq, second_file_seq, 5000, 5000, outfile);
+  // benchmark(mistakes, first_file_seq, second_file_seq, 1000, 1000, outfile);
+  // benchmark(mistakes, first_file_seq, second_file_seq, 3000, 3000, outfile);
+  // benchmark(mistakes, first_file_seq, second_file_seq, 5000, 5000, outfile);
   outfile.close();
   return 0;
 }

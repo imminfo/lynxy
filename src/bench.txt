@@ -8,4 +8,7 @@ benchmark (100 : 100) - 0sec
 benchmark (500 : 500) - 15sec
 benchmark (1000 : 1000) - 61sec
 
-//
+// same thing, but in ms
+benchmark (100 : 100) - 627 milsec
+benchmark (500 : 500) - 15316 milsec
+
