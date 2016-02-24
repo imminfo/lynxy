@@ -89,10 +89,11 @@ void benchmark(size_t mistakes,
 {
 	std::chrono::milliseconds tp1 = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch());
 
+	SparseLevenshteinAutomaton sparse;
 	for (int k = 0; k < first_file_size; k++)  {
-		string auto_word = first_file_seq[k];
-		SparseLevenshteinAutomaton sparse;
-		sparse.set_values (auto_word, mistakes);
+		// string auto_word = first_file_seq[k];
+		// SparseLevenshteinAutomaton sparse;
+		sparse.set_values (first_file_seq[k], mistakes);
 		tuple<vector<int>, vector<int>> s_sparse1 = sparse.start();
 		for (int j = 0; j < second_file_size; j++)  {
 			tuple<vector<int>, vector<int>> s_sparse = s_sparse1;
@@ -100,7 +101,8 @@ void benchmark(size_t mistakes,
 				 s_sparse = sparse.step(s_sparse, second_file_seq[j][i]);
 				 if ((i == second_file_seq[j].length() - 1) && sparse.is_match(s_sparse)) {
 						 // outfile << word_check << " " << auto_word << "\n";
-					 	outfile << (int) i << " " << (int) j << "\n";
+					 	outfile << (int) (i+1) << " " << (int) (j+1) << "\n";
+					 	// cout << (size_t) get<0>(s_sparse).size() << ":" << (size_t) get<1>(s_sparse).size() << endl;
 				 }
 			 }
 		}
