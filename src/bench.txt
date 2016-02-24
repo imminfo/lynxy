@@ -1,3 +1,11 @@
+// initial
 benchmark (100 : 100) - 1sec
 benchmark (500 : 500) - 16sec
 benchmark (1000 : 1000) - 61sec
+
+// change nested if-s to one if
+benchmark (100 : 100) - 0sec
+benchmark (500 : 500) - 15sec
+benchmark (1000 : 1000) - 61sec
+
+//

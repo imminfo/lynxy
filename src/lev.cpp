@@ -17,7 +17,7 @@ class SparseLevenshteinAutomaton {
   public:
     void set_values (string auto_word, int num_mis);
     tuple<vector<int>, vector<int>> start();
-    tuple<vector<int>, vector<int>> step(tuple<vector<int>, vector<int>> &previous, char &c);
+    tuple<vector<int>, vector<int>> step(tuple<vector<int>, vector<int>> &previous, char c);
     bool is_match(tuple<vector<int>, vector<int>>& previous);
 };
     
@@ -34,7 +34,7 @@ tuple<vector<int>, vector<int>> SparseLevenshteinAutomaton::start () {
 	return make_tuple(range_max_edits, range_max_edits); 
 }
 
-tuple<vector<int>, vector<int>> SparseLevenshteinAutomaton::step(tuple<vector<int>, vector<int>>& previous, char& c) {
+tuple<vector<int>, vector<int>> SparseLevenshteinAutomaton::step(tuple<vector<int>, vector<int>>& previous, char c) {
 	vector<int> new_indices;
 	vector<int> new_values;
 	if (get<0>(previous).size() and get<0>(previous).at(0) == 0 and get<1>(previous).at(0) < n) {
@@ -97,15 +97,12 @@ void benchmark(size_t mistakes,
 		sparse.set_values (auto_word, mistakes);
 		tuple<vector<int>, vector<int>> s_sparse1 = sparse.start();
 		for (int j = 0; j < second_file_size; j++)  {
-			string word_check = second_file_seq[j];
 			tuple<vector<int>, vector<int>> s_sparse = s_sparse1;
-			 for (int i = 0; i < word_check.length(); i++) {
-				 s_sparse = sparse.step(s_sparse, word_check[i]);
-				 if (i == word_check.length() - 1) {
-					 if (sparse.is_match(s_sparse)) {
+			 for (int i = 0; i < second_file_seq[j].length(); i++) {
+				 s_sparse = sparse.step(s_sparse, second_file_seq[j][i]);
+				 if ((i == second_file_seq[j].length() - 1) && sparse.is_match(s_sparse)) {
 						 // outfile << word_check << " " << auto_word << "\n";
 					 	outfile << (int) i << " " << (int) j << "\n";
-					 }
 				 }
 			 }
 		}
