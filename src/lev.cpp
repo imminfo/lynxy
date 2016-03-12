@@ -21,6 +21,10 @@ public:
 	}
 	void write_index(int c, int ind);
 	void write_value(int c, int val);
+	void pushback_index(int ind);
+	void pushback_index_1(int ind);
+	void pushback_value(int ind);
+	void pushback_value_1(int ind);
 	void clear_sparsevec();
 	int get_value_val(int ind);
 	int get_index_val(int ind);
@@ -44,6 +48,14 @@ void SparseVector::write_index (int c, int ind) {
 	indices[c] = ind;
 }
 
+void SparseVector::pushback_value (int val) {
+	values.push_back(val);
+}
+
+void SparseVector::pushback_index (int ind) {
+	indices.push_back(ind);
+}
+
 void SparseVector::clear_sparsevec () {
 	indices.clear();
 	values.clear();
@@ -63,6 +75,14 @@ void SparseVector::write_value_1 (int c, int val) {
 
 void SparseVector::write_index_1 (int c, int ind) {
 	indices1[c] = ind;
+}
+
+void SparseVector::pushback_value_1 (int val) {
+	values1.push_back(val);
+}
+
+void SparseVector::pushback_index_1 (int ind) {
+	indices1.push_back(ind);
 }
 
 void SparseVector::clear_sparsevec_1 () {
@@ -86,8 +106,8 @@ class SparseLevenshteinAutomaton {
   public:
     void set_values (string auto_word, int num_mis);
     void start(SparseVector *vec);
-    void step(SparseVector *vec, char c, int *vector_size);
-    bool is_match(SparseVector *vec, int *vector_size);
+    void step(SparseVector *vec, char c, int *vector_size, int *i);
+    bool is_match(SparseVector *vec, int *vector_size, int *i);
 };
     
 void SparseLevenshteinAutomaton::set_values (string auto_word, int num_mis) {
@@ -98,12 +118,14 @@ void SparseLevenshteinAutomaton::set_values (string auto_word, int num_mis) {
 void SparseLevenshteinAutomaton::start (SparseVector *vec) {
 	vec -> clear_sparsevec();
 	for (int i=0; i <= n; i++) {
-		vec -> write_index(i, i);
-		vec -> write_value(i, i);
+//		vec -> write_index(i, i);
+//		vec -> write_value(i, i);
+		vec -> pushback_index(i);
+		vec -> pushback_value(i);
 	}
 }
 
-void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_size) {
+void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_size, int *i) {
 //	cout << "prev1 ";
 //	for (int i=0; i < get<0>(previous).size(); i++) {
 //		cout << get<0>(previous)[i] << " ";
@@ -118,25 +140,29 @@ void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_siz
 //	vector<int> new_indices;
 //	vector<int> new_values;
 	int new_size = 0;
+	if (*i % 2 == 0)  {
 	if (*vector_size > 0 and vec->get_index_val(0) == 0 and vec->get_value_val(0) < n) {
-		vec->write_index_1(0, 0);
-		vec->write_value_1(0, (vec->get_value_val(0) + 1)); // {get<1>(previous).at(0) + 1};
+//		vec->write_index_1(0, 0);
+//		vec->write_value_1(0, (vec->get_value_val(0) + 1)); // {get<1>(previous).at(0) + 1};
+//		for (int u=0; u< 
+		vec -> pushback_index_1(0);
+		vec -> pushback_value_1(vec->get_value_val(0) + 1);
 		new_size = 1;
 	}
-//	for (int i=0; i<new_size; i++) {
-//		cout << "11 " << vec->get_index_val_1(i) << "\n";
-//		cout << "22 " << vec->get_value_val_1(i) << "\n";
+//	for (int h=0; h<new_size; h++) {
+//		cout << "11 " << vec->get_index_val_1(h) << "\n";
+//		cout << "22 " << vec->get_value_val_1(h) << "\n";
 //	}
 //	else {
 //		new_indices = {};
 //		new_values = {};
 //	}
-	for (int i = 0; i < *vector_size; i++) {
-		if (vec->get_index_val(i) == word.length()) {
+	for (int j = 0; j < *vector_size; j++) {
+		if (vec->get_index_val(j) == word.length()) {
 			break;
 		}
 		int cost;
-		if (word[vec->get_index_val(i)] == c)
+		if (word[vec->get_index_val(j)] == c)
 		{
 			cost = 0;
 		}
@@ -144,12 +170,12 @@ void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_siz
 			cost = 1;
 		}
 //		cout << "w " << c <<" " << vec->get_index_val(i) << " " << word[vec->get_index_val(i)] << "\n";
-		int val = vec->get_value_val(i) + cost;
-		if (new_size > 0 and vec->get_index_val_1(new_size - 1) == vec->get_index_val(i)) {
+		int val = vec->get_value_val(j) + cost;
+		if (new_size > 0 and vec->get_index_val_1(new_size - 1) == vec->get_index_val(j)) {
 			val = min(val, (vec->get_value_val_1(new_size - 1) + 1));
 		}
-		if ((i + 1) < *vector_size and vec->get_index_val(i + 1) == vec->get_index_val(i) + 1) {
-			val = min(val, (vec->get_value_val(i + 1) + 1));
+		if ((j + 1) < *vector_size and vec->get_index_val(j + 1) == vec->get_index_val(j) + 1) {
+			val = min(val, (vec->get_value_val(j + 1) + 1));
 		}
 //		cout <<"val " << val <<"\n";
 //		for (int u=0; u<new_size;u++) {
@@ -161,8 +187,10 @@ void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_siz
 //		}
 //		cout<<"\n";
 		if (val <= n) {
-			vec->write_index_1(new_size, (vec->get_index_val(i) + 1));
-			vec->write_value_1(new_size, val);
+//			vec->write_index_1(new_size, (vec->get_index_val(i) + 1));
+//			vec->write_value_1(new_size, val);
+			vec->pushback_index_1(vec->get_index_val(j) + 1);
+			vec->pushback_value_1(val);
 			new_size += 1;
 //			for (int u=0; u<new_size;u++) {
 //				cout <<vec->get_index_val_1(u) << " ";
@@ -186,18 +214,92 @@ void SparseLevenshteinAutomaton::step(SparseVector *vec, char c, int *vector_siz
 //	}
 //	cout <<"\n";
 	vec->clear_sparsevec();
-	for (int j = 0; j < new_size; j++) {
-	  vec->write_index(j, vec->get_index_val_1(j));
-	  vec->write_value(j, vec->get_value_val_1(j));
-	}
-	vec->clear_sparsevec_1();
+
 	
 	*vector_size = new_size; 
+}
+	
+	else  {
+		if (*vector_size > 0 and vec->get_index_val_1(0) == 0 and vec->get_value_val_1(0) < n) {
+	//		vec->write_index_1(0, 0);
+	//		vec->write_value_1(0, (vec->get_value_val(0) + 1)); // {get<1>(previous).at(0) + 1};
+			vec -> pushback_index(0);
+			vec -> pushback_value(vec->get_value_val_1(0) + 1);
+			new_size = 1;
+		}
+	//	for (int i=0; i<new_size; i++) {
+	//		cout << "11 " << vec->get_index_val_1(i) << "\n";
+	//		cout << "22 " << vec->get_value_val_1(i) << "\n";
+	//	}
+		for (int j = 0; j < *vector_size; j++) {
+			if (vec->get_index_val_1(j) == word.length()) {
+				break;
+			}
+			int cost;
+			if (word[vec->get_index_val_1(j)] == c)
+			{
+				cost = 0;
+			}
+			else {
+				cost = 1;
+			}
+	//		cout << "w " << c <<" " << vec->get_index_val(i) << " " << word[vec->get_index_val(i)] << "\n";
+			int val = vec->get_value_val_1(j) + cost;
+			if (new_size > 0 and vec->get_index_val(new_size - 1) == vec->get_index_val_1(j)) {
+				val = min(val, (vec->get_value_val(new_size - 1) + 1));
+			}
+			if ((j + 1) < *vector_size and vec->get_index_val_1(j + 1) == vec->get_index_val_1(j) + 1) {
+				val = min(val, (vec->get_value_val_1(j + 1) + 1));
+			}
+	//		cout <<"val " << val <<"\n";
+	//		for (int u=0; u<new_size;u++) {
+	//			cout <<vec->get_index_val_1(u) << " ";
+	//		}
+	//		cout <<"\n";
+	//		for (int u=0; u<new_size;u++) {
+	//			cout <<vec->get_value_val_1(u) << " ";
+	//		}
+	//		cout<<"\n";
+			if (val <= n) {
+	//			vec->write_index_1(new_size, (vec->get_index_val(i) + 1));
+	//			vec->write_value_1(new_size, val);
+				vec->pushback_index(vec->get_index_val_1(j) + 1);
+				vec->pushback_value(val);
+				new_size += 1;
+//				for (int u=0; u<new_size;u++) {
+//					cout <<vec->get_index_val_1(u) << " ";
+//				}
+//				cout <<"\n";
+//				for (int u=0; u<new_size;u++) {
+//					cout <<vec->get_value_val_1(u) << " ";
+//				}
+//				cout <<"\n";
+			}
+		  
+		}
+//		cout << "newind ";
+//		for (int i=0; i < new_size; i++) {
+//			cout << vec->get_index_val(i) << " ";
+//		}
+//		cout <<"\n";
+//		cout << "newval ";
+//		for (int i=0; i < new_size; i++) {
+//			cout << vec->get_value_val(i) << " ";
+//		}
+//		cout <<"\n";
+		vec->clear_sparsevec_1();		
+		*vector_size = new_size; 
+	}
 
 }
 
-bool SparseLevenshteinAutomaton::is_match(SparseVector *vec, int *vector_size) {
-  return (*vector_size > 0 and vec->get_index_val(*vector_size - 1) == word.length());
+bool SparseLevenshteinAutomaton::is_match(SparseVector *vec, int *vector_size, int *i) {
+	if (*i % 2 == 0)  {
+		return (*vector_size > 0 and vec->get_index_val_1(*vector_size - 1) == word.length());
+	}
+	else {
+		 return (*vector_size > 0 and vec->get_index_val(*vector_size - 1) == word.length());		
+	}
 }
 
 
@@ -228,13 +330,14 @@ void benchmark(size_t mistakes,
 //			 }
 //			 cout <<"\n";
 			 for (int i = 0; i < second_file_seq[j].length(); i++) {
-				 sparse.step(&vec, second_file_seq[j][i], &vector_size); /// ПЕРЕНЕСТИ В SPARSE_VECTOR
-				 if ((i == second_file_seq[j].length() - 1) && sparse.is_match(&vec, &vector_size)) {
-//						  outfile << word_check << " " << auto_word << "\n";
+				 sparse.step(&vec, second_file_seq[j][i], &vector_size, &i); 
+				 if ((i == second_file_seq[j].length() - 1) && sparse.is_match(&vec, &vector_size, &i)) {
 					 	outfile << (int) (k+1) << " " << (int) (j+1) << "\n";
-					 	// cout << (size_t) get<0>(s_sparse).size() << ":" << (size_t) get<1>(s_sparse).size() << endl;
 				 }
+				 
 			 }
+			 vec.clear_sparsevec();
+			 vec.clear_sparsevec_1();
 		}
 	  }
 
