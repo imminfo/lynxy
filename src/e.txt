@@ -1,0 +1,4 @@
+ACGT
+ACG
+ACCCC
+GGT
