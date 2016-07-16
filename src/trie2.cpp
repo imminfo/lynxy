@@ -27,18 +27,20 @@ int letter_index(char c) {
 }
 
 string index_letter(int i) {
+	string s;
 	if (i == 0) {
-		return 'A';
+		s = 'A';
 	}
-	else if (c == 1) {
-		return 'C';
+	else if (i == 1) {
+		s = 'C';
 	}
-	else if (c == 2) {
-		return 'G';
+	else if (i == 2) {
+		s = 'G';
 	}
 	else {
-		return 'T';
+		s = 'T';
 	}
+	return s;
 }
 
 
@@ -47,66 +49,85 @@ void resize_matrix(mat& trie_matrix) {
 	trie_matrix.resize(5, matrix_size);
 }
 
-bool searchWord(string s, mat& trie_matrix)
+int searchWord(string s, mat& trie_matrix)
 {
 	int current_node = 0;
     for ( int i = 0; i < s.length(); i++ )
     {   
     	if (trie_matrix(letter_index(s[i]), current_node) == 0) {
-    		return false;
+    		return -1;
     	}
     	current_node = trie_matrix(letter_index(s[i]), current_node);
     }
-    if (trie_matrix(4, current_node) == 1) {
-    	return true;
-    }
-    else {
-    	return false;
-    }    
+    return trie_matrix(4, current_node);
+//    if (trie_matrix(4, current_node) != -1) {
+//    	return true;
+//    }
+//    else {
+//    	return false;
+//    }    
 }
 
-vector<string> searchWordmismatch(string s, mat& trie_matrix, int maxmis)
+void step(string s, mat& trie_matrix, int current_node, int maxmis, int current_mistakes, int i, vector<int>& all_words) 
 {
-	vector<string> words = {""};
-	vector<double> mistakes = {0};
-	vector<double> mistakes = {0};
-	vector<string> words1;
-	vector<double> mistakes1;
-	int current_mistake;
+	cout << "i " << i <<"\n";
+	cout << "cur node " << current_node <<"\n";
+	cout << " cur_mis " <<current_mistakes <<"\n";
+	int current_mistake = 0;
+	if (i == s.length()) {
+		if (trie_matrix(4, current_node) != -1) {
+			cout << "ind " << trie_matrix(4, current_node) <<"\n";
+			all_words.push_back(trie_matrix(4, current_node));
+		}
+	}
+	else {
+		if (trie_matrix(4, current_node) != -1)
+		{
+			return;
+		}
+		for (int j = 0; j < 4; j++) {
+			cout << "j " << j << "\n";
+			if (trie_matrix(j, current_node) != 0) {
+				cout << "i " << i << " current_node " << current_node << " s[i] " <<s[i] << "\n"; 
+				if (letter_index(s[i]) == j) {
+					current_mistake = 0;
+				}
+				else {
+					current_mistake = 1;
+				}
+				cout << "current_mistake " << current_mistake << "\n";
+				if (current_mistake + current_mistakes > maxmis) {
+					cout <<"max mistake achieved\n";
+					return;
+				}
+				current_mistakes += current_mistake;
+				cout <<"total_current_mistakes "<< current_mistakes << "\n";
+				current_node = trie_matrix(j, current_node);
+				cout << "current_node " << current_node << "\n";
+				i += 1;
+				step(s, trie_matrix, current_node, maxmis, current_mistakes, i, all_words); 
+			}
+		}
+	}
+}
+
+vector<int> searchWordmismatch(string s, mat& trie_matrix, int maxmis)
+{
 	int current_node = 0;
-    for ( int i = 0; i < s.length(); i++ )
-    {   
-    	if (i%2 == 0) {
-    		for (int j = 0; j < words.length(); j++) {
-    			for (int k = 0; k < 4; k++) {
-    				if (trie_matrix(letter_index(s[i]), current_node) == 0) {
-    					current_mistake = 1;
-    				}
-    				else {
-    					current_mistake = 0;
-    				}
-    				if ((mistakes[j] + current_mistake) <= maxmis) {
-    					words.pushback(strcat(words[j], index_letter(k)))
-    					
-    				}
-    			}
-    		}
-    	}
-    	if (trie_matrix(letter_index(s[i]), current_node) == 0) {
-    		return false;
-    	}
-    	current_node = trie_matrix(letter_index(s[i]), current_node);
-    }
-    if (trie_matrix(4, current_node) == 1) {
-    	return true;
-    }
-    else {
-    	return false;
-    }    
+	vector<int> all_words;
+	int i = 0;
+	int current_mistakes = 0;
+    step(s, trie_matrix, current_node, maxmis, current_mistakes, i, all_words); 
+    for (int j = 0; j < all_words.size(); j++ ) 
+	{
+		cout << all_words[j] << "\t";
+	}
+    cout << "\n";
+    return all_words;
 }
 
 
-void addWord(string s, mat& trie_matrix)
+void addWord(string s, mat& trie_matrix, int j)
 {
 	int current_node = 0;
     for ( int i = 0; i < s.length(); i++ )
@@ -124,8 +145,7 @@ void addWord(string s, mat& trie_matrix)
     		current_node = trie_matrix(let_index, current_node);
     	}
     }
-    trie_matrix(4, current_node) = 1;
-    
+    trie_matrix(4, current_node) = j;    
 }
 
 
@@ -158,17 +178,22 @@ int main()
 		  myfile1.close();
 		}
 	mat trie_matrix = mat(5, matrix_size, fill::zeros);
+	for (int i = 0; i < matrix_size; i++) {
+		trie_matrix(4, i) = -1;
+	}
 //	for (int i = 0; i < 10000; i++) 
 //	{
-//		addWord(first_file_seq[i], trie_matrix);					 					 
+//		addWord(first_file_seq[i], trie_matrix, i);					 					 
 //	}
-	addWord("ACGT", trie_matrix);
-	addWord("ACG", trie_matrix);
-    addWord("ACCCC", trie_matrix);
-    addWord("GGT", trie_matrix);
-	cout<< searchWord("GGT", trie_matrix) << "\n";
-    cout<< searchWord("GCT", trie_matrix) << "\n";
-//    printTrie(trie_matrix);
+	addWord("ACGT", trie_matrix, 0);
+	addWord("ACG", trie_matrix, 1);
+    addWord("ACCCC", trie_matrix, 2);
+    addWord("GGT", trie_matrix, 3);
+//	cout<< searchWord("GGT", trie_matrix) << "\n";
+//    cout<< searchWord("GCT", trie_matrix) << "\n";
+//    cout<< searchWordmismatch("GCT", trie_matrix, 1) << "\n"; 
+    vector<int> wo = searchWordmismatch("GCT", trie_matrix, 1);
+    printTrie(trie_matrix);
 //    cout << "last " << next_free_node << "\n";
     return 0;
 }
