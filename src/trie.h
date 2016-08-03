@@ -4,7 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <ctime>
-
+#include <algorithm>
 
 using namespace std;
 using namespace std::chrono;
@@ -167,7 +167,7 @@ void bench_trie(size_t mistakes,
 
     vector<int> tmp;
     for (int j = 0; j < first_file_size; j++)  {
-        tmp = search(first_file_seq[j], 1, &tree);
+        tmp = search(first_file_seq[j], mistakes, &tree);
         for (int k = 0; k < tmp.size(); k++) {
             outfile << (int) (j+1) << " " << (int) (tmp[k]) << "\n";
         }
