@@ -1,6 +1,8 @@
 #include "mtrie.h"
 #include "trie.h"
 
+
+
 int main () {
 //	  string line1, line2;
 //	  char* file1 = argv[1];

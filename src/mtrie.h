@@ -3,47 +3,31 @@
 #include <string>
 #include <vector>
 #include <armadillo>
+#include <map>
 using namespace std;
 
 using namespace arma;
 
 int next_free_node = 1;
 int matrix_size = 100000;
+ 
+ 
+ 
+ typedef std::map<char, int> let_index;
 
-int letter_index(char c) {
-	int d = (int)c;
-	if (d == 65) {
-		return 0;
-	}
-	else if (c == 67) {
-		return 1;
-	}
-	else if (c == 71) {
-		return 2;
-	}
-	else {
-		return 3;
-	}
-}
+ int letter_index(char c)
+ {
+	 let_index m;
+     m['A'] = 0;
+     m['C'] = 1;
+     m['G'] = 2;
+     m['T'] = 3;
 
-string index_letter(int i) {
-	string s;
-	if (i == 0) {
-		s = 'A';
-	}
-	else if (i == 1) {
-		s = 'C';
-	}
-	else if (i == 2) {
-		s = 'G';
-	}
-	else {
-		s = 'T';
-	}
-	return s;
-}
+     return m[c];
 
-
+ }
+ 
+ 
 void resize_matrix(mat& trie_matrix) {
 	matrix_size += 100000;
 	trie_matrix.resize(5, matrix_size);
